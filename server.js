@@ -117,6 +117,53 @@ app.post("/create-checkout-session", async (request, response) => {
   }
 });
 
+app.get("/confirm-checkout-session", async (request, response) => {
+  if (!stripe) {
+    return response.status(500).json({ error: "Missing STRIPE_SECRET_KEY." });
+  }
+
+  const sessionId = String(request.query.session_id || "");
+
+  if (!sessionId.startsWith("cs_")) {
+    return response.status(400).json({ error: "Missing checkout session." });
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const planKey = session.metadata?.plan || "day";
+    const plan = plans[planKey];
+    const email = session.customer_details?.email || session.customer_email;
+
+    if (!plan) {
+      return response.status(400).json({ error: "Unknown checkout plan." });
+    }
+
+    if (session.payment_status !== "paid" || !email) {
+      return response.status(402).json({ error: "Payment is not confirmed yet." });
+    }
+
+    const paidAt = session.created ? session.created * 1000 : Date.now();
+    const expiresAt = paidAt + plan.durationMs;
+
+    await savePaidAccess({
+      email,
+      sessionId: session.id,
+      plan: planKey,
+      paidAt,
+      expiresAt,
+    });
+
+    response.json({
+      active: true,
+      email,
+      plan: planKey,
+      expiresAt,
+    });
+  } catch (error) {
+    response.status(500).json({ error: "Unable to confirm the checkout session." });
+  }
+});
+
 app.get("/access-status", async (request, response) => {
   const email = String(request.query.email || "").toLowerCase();
   const access = email ? await getActiveAccessByEmail(email) : null;

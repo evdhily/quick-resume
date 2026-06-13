@@ -16,12 +16,52 @@
 
     <main class="status-card">
       <p class="eyebrow">Payment confirmed</p>
-      <h1>Your 24h access is active.</h1>
-      <p>
-        You can now return to your resume and download the PDF. Final access validation is handled
-        by the Stripe webhook on the server.
+      <h1 id="successTitle">Activating your access...</h1>
+      <p id="successMessage">
+        We are confirming your payment and unlocking your resume download.
       </p>
       <a class="button" href="index.html#builder">Back to my resume</a>
     </main>
+
+    <script>
+      const title = document.querySelector("#successTitle");
+      const message = document.querySelector("#successMessage");
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get("session_id");
+
+      async function confirmCheckoutSession() {
+        if (!sessionId) {
+          title.textContent = "Payment received.";
+          message.textContent = "Your access will be activated after Stripe confirms the payment.";
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `/confirm-checkout-session?session_id=${encodeURIComponent(sessionId)}`
+          );
+
+          if (!response.ok) {
+            throw new Error("Checkout confirmation failed.");
+          }
+
+          const access = await response.json();
+          const planLabel = access.plan === "week" ? "7-day" : "24h";
+          const expiresAt = new Date(access.expiresAt).toLocaleString("en-GB", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          });
+
+          title.textContent = `Your ${planLabel} access is active.`;
+          message.textContent = `You can now download your resume. Access expires on ${expiresAt}.`;
+        } catch (error) {
+          title.textContent = "Payment received.";
+          message.textContent =
+            "Your access is being verified. If it does not unlock, contact support with your payment email.";
+        }
+      }
+
+      confirmCheckoutSession();
+    </script>
   </body>
 </html>
