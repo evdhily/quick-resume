@@ -175,8 +175,21 @@ app.get("/access-status", async (request, response) => {
   });
 });
 
-await initDatabase();
+try {
+  await initDatabase();
 
-app.listen(port, () => {
-  console.log(`quick resume running on ${appUrl}`);
-});
+  app.listen(port, () => {
+    console.log(`quick resume running on ${appUrl}`);
+  });
+} catch (error) {
+  console.error("Startup failed.");
+  console.error(error.message);
+  console.error({
+    databaseUrlConfigured: Boolean(process.env.DATABASE_URL),
+    databaseSsl: process.env.DATABASE_SSL,
+    databasePoolSize: process.env.DATABASE_POOL_SIZE,
+    stripeSecretConfigured: Boolean(process.env.STRIPE_SECRET_KEY),
+    appUrl,
+  });
+  process.exit(1);
+}
