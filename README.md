@@ -32,6 +32,7 @@ STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 APP_URL=http://localhost:3000
 PORT=3000
+DATABASE_PATH=data/quick-resume.sqlite
 ```
 
 Start:
@@ -39,6 +40,20 @@ Start:
 ```bash
 npm start
 ```
+
+## Database
+
+Local development uses SQLite at:
+
+```bash
+data/quick-resume.sqlite
+```
+
+The database stores confirmed Stripe sessions with the customer email, selected plan, payment time,
+and access expiration time. The `data/` folder is ignored by Git.
+
+For production, use a persistent database such as PostgreSQL on Render, Supabase, or Neon. A free
+Render web service filesystem should not be treated as durable storage for paid access records.
 
 ## Next steps
 
