@@ -610,6 +610,134 @@ select:focus {
   box-shadow: 0 12px 28px rgba(217, 96, 85, 0.25);
 }
 
+.modal-open {
+  overflow: hidden;
+}
+
+.checkout-modal[hidden] {
+  display: none;
+}
+
+.checkout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(23, 33, 43, 0.58);
+  backdrop-filter: blur(6px);
+}
+
+.checkout-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 100%);
+  max-height: calc(100vh - 44px);
+  overflow: auto;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-copy {
+  color: var(--muted);
+  max-width: 560px;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 24px 0 18px;
+}
+
+.plan-card {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-height: 170px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(38, 52, 66, 0.06);
+}
+
+.plan-card:hover,
+.plan-card:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(31, 138, 131, 0.12);
+  outline: none;
+}
+
+.plan-card:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.plan-card[data-loading="true"]::after {
+  content: "Redirecting...";
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.plan-name {
+  font-weight: 900;
+}
+
+.plan-card strong {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.plan-card small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.featured-plan {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+.plan-badge {
+  justify-self: start;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--accent-2);
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .site-footer,
 .footer-links {
   justify-content: space-between;
@@ -725,7 +853,8 @@ select:focus {
   .logo-strip,
   .template-grid,
   .feature-grid,
-  .review-grid {
+  .review-grid,
+  .plan-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -752,8 +881,17 @@ select:focus {
   .review-grid,
   .field-grid,
   .resume-header,
-  .resume-grid {
+  .resume-grid,
+  .plan-grid {
     grid-template-columns: 1fr;
+  }
+
+  .checkout-modal {
+    padding: 12px;
+  }
+
+  .checkout-dialog {
+    padding: 24px 18px;
   }
 
   .logo-strip {

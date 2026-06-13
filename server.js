@@ -8,6 +8,20 @@ const port = process.env.PORT || 3000;
 const appUrl = process.env.APP_URL || `http://localhost:${port}`;
 
 const paidAccess = new Map();
+const plans = {
+  day: {
+    name: "quick resume - 24h resume access",
+    description: "Resume PDF download access for 24h.",
+    unitAmount: 199,
+    durationMs: 24 * 60 * 60 * 1000,
+  },
+  week: {
+    name: "quick resume - 7-day resume access",
+    description: "Resume PDF download access for 7 days.",
+    unitAmount: 899,
+    durationMs: 7 * 24 * 60 * 60 * 1000,
+  },
+};
 
 app.disable("x-powered-by");
 app.use(express.static(".", { dotfiles: "ignore" }));
@@ -21,7 +35,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (request, 
   let event;
 
   if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return response.status(500).send("Configuration Stripe manquante.");
+    return response.status(500).send("Missing Stripe configuration.");
   }
 
   try {
@@ -37,11 +51,13 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (request, 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const email = session.customer_details?.email;
-    const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+    const plan = plans[session.metadata?.plan] || plans.day;
+    const expiresAt = Date.now() + plan.durationMs;
 
     if (email) {
       paidAccess.set(email, {
         sessionId: session.id,
+        plan: session.metadata?.plan || "day",
         paidAt: Date.now(),
         expiresAt,
       });
@@ -55,21 +71,31 @@ app.use(express.json());
 
 app.post("/create-checkout-session", async (request, response) => {
   if (!stripe) {
-    return response.status(500).json({ error: "STRIPE_SECRET_KEY manquante." });
+    return response.status(500).json({ error: "Missing STRIPE_SECRET_KEY." });
+  }
+
+  const planKey = request.body?.plan;
+  const plan = plans[planKey];
+
+  if (!plan) {
+    return response.status(400).json({ error: "Unknown checkout plan." });
   }
 
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      metadata: {
+        plan: planKey,
+      },
       line_items: [
         {
           price_data: {
             currency: "eur",
             product_data: {
-              name: "quick resume - 24h resume access",
-              description: "Resume PDF download access for 24h.",
+              name: plan.name,
+              description: plan.description,
             },
-            unit_amount: 199,
+            unit_amount: plan.unitAmount,
           },
           quantity: 1,
         },

@@ -11,6 +11,9 @@ const previewSummary = document.querySelector("#previewSummary");
 const resumePreview = document.querySelector(".resume-preview");
 const templateCards = document.querySelectorAll(".template-card");
 const checkoutButton = document.querySelector("#checkoutButton");
+const checkoutModal = document.querySelector("#checkoutModal");
+const closeCheckoutButtons = document.querySelectorAll("[data-close-checkout]");
+const planCards = document.querySelectorAll(".plan-card");
 
 function updatePreview() {
   previewName.textContent = nameInput.value.trim() || "Your name";
@@ -50,34 +53,68 @@ templateCards.forEach((card) => {
   });
 });
 
-if (checkoutButton) {
-  checkoutButton.addEventListener("click", async () => {
-    checkoutButton.disabled = true;
-    checkoutButton.textContent = "Redirecting...";
+function openCheckoutModal() {
+  checkoutModal.hidden = false;
+  document.body.classList.add("modal-open");
+  checkoutModal.querySelector(".plan-card")?.focus();
+}
 
-    try {
-      const response = await fetch("/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product: "quick resume - 24h resume access",
-          amount: 199,
-          currency: "eur",
-        }),
-      });
+function closeCheckoutModal() {
+  checkoutModal.hidden = true;
+  document.body.classList.remove("modal-open");
+  checkoutButton?.focus();
+}
 
-      if (!response.ok) {
-        throw new Error("Unable to create the checkout session.");
-      }
+async function startCheckout(plan) {
+  const selectedCard = document.querySelector(`[data-plan="${plan}"]`);
 
-      const data = await response.json();
-      window.location.href = data.url;
-    } catch (error) {
-      checkoutButton.disabled = false;
-      checkoutButton.textContent = "Unlock 24h - 1,99 €";
-      alert(
-        "Payments will be activated as soon as the Stripe keys are configured on the server."
-      );
+  planCards.forEach((card) => {
+    card.disabled = true;
+  });
+
+  if (selectedCard) {
+    selectedCard.dataset.loading = "true";
+  }
+
+  try {
+    const response = await fetch("/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Unable to create the checkout session.");
+    }
+
+    const data = await response.json();
+    window.location.href = data.url;
+  } catch (error) {
+    planCards.forEach((card) => {
+      card.disabled = false;
+      delete card.dataset.loading;
+    });
+
+    alert("Payments will be activated as soon as the Stripe keys are configured on the server.");
+  }
+}
+
+if (checkoutButton && checkoutModal) {
+  checkoutButton.addEventListener("click", openCheckoutModal);
+
+  closeCheckoutButtons.forEach((button) => {
+    button.addEventListener("click", closeCheckoutModal);
+  });
+
+  planCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      startCheckout(card.dataset.plan);
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !checkoutModal.hidden) {
+      closeCheckoutModal();
     }
   });
 }

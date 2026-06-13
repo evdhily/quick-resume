@@ -28,7 +28,6 @@
         <a href="#templates">Templates</a>
         <a href="#examples">Examples</a>
         <a href="#career">Tools</a>
-        <a href="#pricing">Pricing</a>
       </nav>
 
       <div class="header-actions">
@@ -52,7 +51,7 @@
           </div>
           <div class="trust-row" aria-label="Trust indicators">
             <span><strong>32</strong> templates</span>
-            <span><strong>1,99 €</strong> export 24h</span>
+            <span><strong>PDF</strong> export</span>
             <span><strong>4.8/5</strong> reviews</span>
           </div>
         </div>
@@ -117,11 +116,8 @@
               </label>
             </div>
             <button id="checkoutButton" class="button full-width" type="button">
-              Unlock 24h - 1,99 €
+              Download resume
             </button>
-            <p class="payment-note">
-              Secure payment by Stripe. Download access stays active for 24h after confirmation.
-            </p>
           </form>
 
           <article class="resume-preview classic" aria-label="Resume preview">
@@ -271,12 +267,50 @@
 
       <section id="pricing" class="pricing-section">
         <div>
-          <p class="eyebrow">Simple</p>
-          <h2>Create for free, download for 24h for 1,99 €.</h2>
+          <p class="eyebrow">Ready when you are</p>
+          <h2>Create your resume first, then choose your download access.</h2>
         </div>
-        <a class="button" href="#builder">Unlock my resume</a>
+        <a class="button" href="#builder">Finish my resume</a>
       </section>
     </main>
+
+    <div id="checkoutModal" class="checkout-modal" hidden>
+      <div class="modal-backdrop" data-close-checkout></div>
+      <section
+        class="checkout-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkoutTitle"
+      >
+        <button class="modal-close" type="button" aria-label="Close" data-close-checkout>
+          ×
+        </button>
+        <p class="eyebrow">Secure checkout</p>
+        <h2 id="checkoutTitle">Choose your download access.</h2>
+        <p class="modal-copy">
+          Your resume is ready. Pick the access window that works best for you, then download your
+          PDF after payment.
+        </p>
+
+        <div class="plan-grid" role="list">
+          <button class="plan-card" type="button" data-plan="day" role="listitem">
+            <span class="plan-name">24-hour access</span>
+            <strong>1,99 €</strong>
+            <small>Best for one quick download</small>
+          </button>
+          <button class="plan-card featured-plan" type="button" data-plan="week" role="listitem">
+            <span class="plan-badge">Popular</span>
+            <span class="plan-name">7-day access</span>
+            <strong>8,99 €</strong>
+            <small>Edit and download for a full week</small>
+          </button>
+        </div>
+
+        <p class="payment-note">
+          Secure payment by Stripe. No card details are stored by quick resume.
+        </p>
+      </section>
+    </div>
 
     <footer class="site-footer">
       <span>quick resume</span>

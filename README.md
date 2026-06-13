@@ -1,11 +1,12 @@
 # quick resume
 
-Resume builder with PDF download access for 24h after a one-time payment.
+Resume builder with paid PDF download access after the resume is finished.
 
 ## Ready
 
-- Main page with `1,99 €` pricing.
-- Checkout button ready to call `/create-checkout-session`.
+- Main page with no pricing shown before export.
+- Checkout modal with `1,99 €` for 24h access and `8,99 €` for 7-day access.
+- Download button ready to call `/create-checkout-session`.
 - Stripe return pages: `success.html` and `cancel.html`.
 - Basic legal pages: legal notice, terms, privacy, contact.
 - Starter Express/Stripe backend in `server.js`.
