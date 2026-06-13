@@ -1,57 +1,80 @@
-import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { DatabaseSync } from "node:sqlite";
+import pg from "pg";
 
-const databasePath = resolve(process.env.DATABASE_PATH || "data/quick-resume.sqlite");
+const { Pool } = pg;
 
-mkdirSync(dirname(databasePath), { recursive: true });
-
-const db = new DatabaseSync(databasePath);
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS paid_access (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL,
-    stripe_session_id TEXT NOT NULL UNIQUE,
-    plan TEXT NOT NULL,
-    paid_at INTEGER NOT NULL,
-    expires_at INTEGER NOT NULL,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000)
-  );
-
-  CREATE INDEX IF NOT EXISTS paid_access_email_idx
-    ON paid_access (email);
-
-  CREATE INDEX IF NOT EXISTS paid_access_expires_at_idx
-    ON paid_access (expires_at);
-`);
-
-const saveAccessStatement = db.prepare(`
-  INSERT INTO paid_access (email, stripe_session_id, plan, paid_at, expires_at)
-  VALUES (?, ?, ?, ?, ?)
-  ON CONFLICT(stripe_session_id) DO UPDATE SET
-    email = excluded.email,
-    plan = excluded.plan,
-    paid_at = excluded.paid_at,
-    expires_at = excluded.expires_at
-`);
-
-const getAccessStatement = db.prepare(`
-  SELECT email, stripe_session_id AS sessionId, plan, paid_at AS paidAt, expires_at AS expiresAt
-  FROM paid_access
-  WHERE email = ? AND expires_at > ?
-  ORDER BY expires_at DESC
-  LIMIT 1
-`);
-
-export function savePaidAccess({ email, sessionId, plan, paidAt, expiresAt }) {
-  saveAccessStatement.run(email.toLowerCase(), sessionId, plan, paidAt, expiresAt);
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required. Use PostgreSQL for production storage.");
 }
 
-export function getActiveAccessByEmail(email) {
-  return getAccessStatement.get(email.toLowerCase(), Date.now()) || null;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false },
+  max: Number(process.env.DATABASE_POOL_SIZE || 10),
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 10_000,
+});
+
+export async function initDatabase() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS paid_access (
+      id BIGSERIAL PRIMARY KEY,
+      email TEXT NOT NULL,
+      stripe_session_id TEXT NOT NULL UNIQUE,
+      plan TEXT NOT NULL CHECK (plan IN ('day', 'week')),
+      paid_at BIGINT NOT NULL,
+      expires_at BIGINT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS paid_access_email_idx
+      ON paid_access (email);
+
+    CREATE INDEX IF NOT EXISTS paid_access_email_expires_idx
+      ON paid_access (email, expires_at DESC);
+
+    CREATE INDEX IF NOT EXISTS paid_access_expires_at_idx
+      ON paid_access (expires_at);
+  `);
+}
+
+export async function savePaidAccess({ email, sessionId, plan, paidAt, expiresAt }) {
+  await pool.query(
+    `
+      INSERT INTO paid_access (email, stripe_session_id, plan, paid_at, expires_at)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (stripe_session_id) DO UPDATE SET
+        email = EXCLUDED.email,
+        plan = EXCLUDED.plan,
+        paid_at = EXCLUDED.paid_at,
+        expires_at = EXCLUDED.expires_at
+    `,
+    [email.toLowerCase(), sessionId, plan, paidAt, expiresAt]
+  );
+}
+
+export async function getActiveAccessByEmail(email) {
+  const result = await pool.query(
+    `
+      SELECT
+        email,
+        stripe_session_id AS "sessionId",
+        plan,
+        paid_at AS "paidAt",
+        expires_at AS "expiresAt"
+      FROM paid_access
+      WHERE email = $1 AND expires_at > $2
+      ORDER BY expires_at DESC
+      LIMIT 1
+    `,
+    [email.toLowerCase(), Date.now()]
+  );
+
+  return result.rows[0] || null;
 }
 
 export function getDatabaseInfo() {
-  return { path: databasePath };
+  return {
+    type: "postgres",
+    poolSize: pool.options.max,
+  };
 }

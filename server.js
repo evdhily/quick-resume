@@ -1,7 +1,12 @@
 import "dotenv/config";
 import express from "express";
 import Stripe from "stripe";
-import { getActiveAccessByEmail, getDatabaseInfo, savePaidAccess } from "./database.js";
+import {
+  getActiveAccessByEmail,
+  getDatabaseInfo,
+  initDatabase,
+  savePaidAccess,
+} from "./database.js";
 
 const app = express();
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
@@ -27,7 +32,7 @@ app.disable("x-powered-by");
 app.use(express.static(".", { dotfiles: "ignore" }));
 
 app.get("/health", (request, response) => {
-  response.json({ ok: true, service: "quick resume", database: getDatabaseInfo().path });
+  response.json({ ok: true, service: "quick resume", database: getDatabaseInfo() });
 });
 
 app.post("/webhook", express.raw({ type: "application/json" }), async (request, response) => {
@@ -56,7 +61,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (request, 
     const expiresAt = Date.now() + plan.durationMs;
 
     if (email) {
-      savePaidAccess({
+      await savePaidAccess({
         email,
         sessionId: session.id,
         plan: session.metadata?.plan || "day",
@@ -112,9 +117,9 @@ app.post("/create-checkout-session", async (request, response) => {
   }
 });
 
-app.get("/access-status", (request, response) => {
+app.get("/access-status", async (request, response) => {
   const email = String(request.query.email || "").toLowerCase();
-  const access = email ? getActiveAccessByEmail(email) : null;
+  const access = email ? await getActiveAccessByEmail(email) : null;
 
   response.json({
     active: Boolean(access),
@@ -122,6 +127,8 @@ app.get("/access-status", (request, response) => {
     expiresAt: access?.expiresAt || null,
   });
 });
+
+await initDatabase();
 
 app.listen(port, () => {
   console.log(`quick resume running on ${appUrl}`);

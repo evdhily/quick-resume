@@ -9,7 +9,8 @@ Resume builder with paid PDF download access after the resume is finished.
 - Download button ready to call `/create-checkout-session`.
 - Stripe return pages: `success.html` and `cancel.html`.
 - Basic legal pages: legal notice, terms, privacy, contact.
-- Starter Express/Stripe backend in `server.js`.
+- Express/Stripe backend in `server.js`.
+- PostgreSQL storage for paid access records.
 
 ## Local setup
 
@@ -32,7 +33,9 @@ STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 APP_URL=http://localhost:3000
 PORT=3000
-DATABASE_PATH=data/quick-resume.sqlite
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
+DATABASE_SSL=true
+DATABASE_POOL_SIZE=10
 ```
 
 Start:
@@ -43,17 +46,32 @@ npm start
 
 ## Database
 
-Local development uses SQLite at:
+quick resume uses PostgreSQL through `DATABASE_URL`.
 
-```bash
-data/quick-resume.sqlite
+The database stores confirmed Stripe sessions with:
+
+- customer email;
+- Stripe Checkout session ID;
+- selected plan: `day` or `week`;
+- payment time;
+- access expiration time.
+
+The app creates the required table and indexes automatically on startup:
+
+```sql
+paid_access (
+  id,
+  email,
+  stripe_session_id,
+  plan,
+  paid_at,
+  expires_at,
+  created_at
+)
 ```
 
-The database stores confirmed Stripe sessions with the customer email, selected plan, payment time,
-and access expiration time. The `data/` folder is ignored by Git.
-
-For production, use a persistent database such as PostgreSQL on Render, Supabase, or Neon. A free
-Render web service filesystem should not be treated as durable storage for paid access records.
+For several thousand customers, use a managed PostgreSQL provider such as Supabase, Neon, Render
+Postgres, Railway Postgres, or another production database provider.
 
 ## Next steps
 
@@ -87,6 +105,9 @@ STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 APP_URL=https://your-render-url.onrender.com
 PORT=10000
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
+DATABASE_SSL=true
+DATABASE_POOL_SIZE=10
 ```
 
 When your domain is connected to the service, replace `APP_URL` with:
