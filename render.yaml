@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: quick-cv
+    name: quick-resume
     runtime: node
     plan: free
     buildCommand: npm install

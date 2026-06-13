@@ -60,7 +60,7 @@ if (checkoutButton) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          product: "quick.cv - Acces CV 24h",
+          product: "quick resume - Acces CV 24h",
           amount: 199,
           currency: "eur",
         }),

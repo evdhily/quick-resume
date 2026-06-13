@@ -1,4 +1,4 @@
-# quick.cv
+# quick resume
 
 Site de création de CV avec accès au téléchargement PDF pendant 24h après paiement unique.
 
@@ -73,8 +73,8 @@ APP_URL=https://votre-url-render.onrender.com
 PORT=10000
 ```
 
-Quand `quick.cv` sera connecté au service, remplacer `APP_URL` par:
+Quand votre domaine sera connecté au service, remplacer `APP_URL` par:
 
 ```bash
-APP_URL=https://quick.cv
+APP_URL=https://votre-domaine.com
 ```

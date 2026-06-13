@@ -13,7 +13,7 @@ app.disable("x-powered-by");
 app.use(express.static(".", { dotfiles: "ignore" }));
 
 app.get("/health", (request, response) => {
-  response.json({ ok: true, service: "quick.cv" });
+  response.json({ ok: true, service: "quick resume" });
 });
 
 app.post("/webhook", express.raw({ type: "application/json" }), async (request, response) => {
@@ -66,7 +66,7 @@ app.post("/create-checkout-session", async (request, response) => {
           price_data: {
             currency: "eur",
             product_data: {
-              name: "quick.cv - Acces CV 24h",
+              name: "quick resume - Acces CV 24h",
               description: "Téléchargement PDF du CV pendant 24h.",
             },
             unit_amount: 199,
@@ -95,5 +95,5 @@ app.get("/access-status", (request, response) => {
 });
 
 app.listen(port, () => {
-  console.log(`quick.cv running on ${appUrl}`);
+  console.log(`quick resume running on ${appUrl}`);
 });
