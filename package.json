@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "db:check": "node scripts/check-db.js",
     "start": "node server.js"
   },
   "dependencies": {

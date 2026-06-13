@@ -73,6 +73,39 @@ paid_access (
 For several thousand customers, use a managed PostgreSQL provider such as Supabase, Neon, Render
 Postgres, Railway Postgres, or another production database provider.
 
+The schema is also available in:
+
+```bash
+database/schema.sql
+```
+
+After setting `DATABASE_URL`, verify the connection and create the table/indexes with:
+
+```bash
+npm run db:check
+```
+
+### Supabase or Neon setup
+
+1. Create a PostgreSQL project.
+2. Copy the pooled connection string.
+3. Put it in `.env` as `DATABASE_URL`.
+4. Keep `DATABASE_SSL=true`.
+5. Run `npm run db:check`.
+6. Start the app with `npm start`.
+
+Example `.env`:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+APP_URL=http://localhost:3000
+PORT=3000
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
+DATABASE_SSL=true
+DATABASE_POOL_SIZE=10
+```
+
 ## Next steps
 
 1. Create the Stripe account.

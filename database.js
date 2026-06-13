@@ -2,20 +2,28 @@ import pg from "pg";
 
 const { Pool } = pg;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is required. Use PostgreSQL for production storage.");
+let pool;
+
+function getPool() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is required. Use PostgreSQL for production storage.");
+  }
+
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false },
+      max: Number(process.env.DATABASE_POOL_SIZE || 10),
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+    });
+  }
+
+  return pool;
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false },
-  max: Number(process.env.DATABASE_POOL_SIZE || 10),
-  idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 10_000,
-});
-
 export async function initDatabase() {
-  await pool.query(`
+  await getPool().query(`
     CREATE TABLE IF NOT EXISTS paid_access (
       id BIGSERIAL PRIMARY KEY,
       email TEXT NOT NULL,
@@ -38,7 +46,7 @@ export async function initDatabase() {
 }
 
 export async function savePaidAccess({ email, sessionId, plan, paidAt, expiresAt }) {
-  await pool.query(
+  await getPool().query(
     `
       INSERT INTO paid_access (email, stripe_session_id, plan, paid_at, expires_at)
       VALUES ($1, $2, $3, $4, $5)
@@ -53,7 +61,7 @@ export async function savePaidAccess({ email, sessionId, plan, paidAt, expiresAt
 }
 
 export async function getActiveAccessByEmail(email) {
-  const result = await pool.query(
+  const result = await getPool().query(
     `
       SELECT
         email,
@@ -75,6 +83,14 @@ export async function getActiveAccessByEmail(email) {
 export function getDatabaseInfo() {
   return {
     type: "postgres",
-    poolSize: pool.options.max,
+    configured: Boolean(process.env.DATABASE_URL),
+    poolSize: Number(process.env.DATABASE_POOL_SIZE || 10),
   };
+}
+
+export async function closeDatabase() {
+  if (pool) {
+    await pool.end();
+    pool = null;
+  }
 }
