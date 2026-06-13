@@ -13,11 +13,11 @@ const templateCards = document.querySelectorAll(".template-card");
 const checkoutButton = document.querySelector("#checkoutButton");
 
 function updatePreview() {
-  previewName.textContent = nameInput.value.trim() || "Votre nom";
-  previewRole.textContent = roleInput.value.trim() || "Poste recherché";
+  previewName.textContent = nameInput.value.trim() || "Your name";
+  previewRole.textContent = roleInput.value.trim() || "Target role";
   previewSummary.textContent =
     summaryInput.value.trim() ||
-    "Ajoutez ici un résumé court, orienté résultats, adapté à l'offre visée.";
+    "Add a short, results-focused summary tailored to the role you want.";
 
   document.documentElement.style.setProperty("--accent", accentInput.value);
   resumePreview.classList.remove("classic", "compact", "editorial");
@@ -53,30 +53,30 @@ templateCards.forEach((card) => {
 if (checkoutButton) {
   checkoutButton.addEventListener("click", async () => {
     checkoutButton.disabled = true;
-    checkoutButton.textContent = "Redirection...";
+    checkoutButton.textContent = "Redirecting...";
 
     try {
       const response = await fetch("/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          product: "quick resume - Acces CV 24h",
+          product: "quick resume - 24h resume access",
           amount: 199,
           currency: "eur",
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Impossible de creer la session de paiement.");
+        throw new Error("Unable to create the checkout session.");
       }
 
       const data = await response.json();
       window.location.href = data.url;
     } catch (error) {
       checkoutButton.disabled = false;
-      checkoutButton.textContent = "Débloquer 24h - 1,99 €";
+      checkoutButton.textContent = "Unlock 24h - 1,99 €";
       alert(
-        "Le paiement sera activé dès que les clés Stripe seront configurées sur le serveur."
+        "Payments will be activated as soon as the Stripe keys are configured on the server."
       );
     }
   });

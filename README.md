@@ -1,30 +1,30 @@
 # quick resume
 
-Site de création de CV avec accès au téléchargement PDF pendant 24h après paiement unique.
+Resume builder with PDF download access for 24h after a one-time payment.
 
-## Étape 1 déjà prête
+## Ready
 
-- Page principale avec prix `1,99 €`.
-- Bouton de paiement prêt à appeler `/create-checkout-session`.
-- Pages retour Stripe: `success.html` et `cancel.html`.
-- Pages de base: mentions légales, CGV, confidentialité, contact.
-- Backend Express/Stripe de départ dans `server.js`.
+- Main page with `1,99 €` pricing.
+- Checkout button ready to call `/create-checkout-session`.
+- Stripe return pages: `success.html` and `cancel.html`.
+- Basic legal pages: legal notice, terms, privacy, contact.
+- Starter Express/Stripe backend in `server.js`.
 
-## Configuration locale
+## Local setup
 
-Installer les dépendances:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Créer `.env` à partir de `.env.example`:
+Create `.env` from `.env.example`:
 
 ```bash
 cp .env.example .env
 ```
 
-Remplir:
+Fill in:
 
 ```bash
 STRIPE_SECRET_KEY=sk_test_xxx
@@ -33,25 +33,25 @@ APP_URL=http://localhost:3000
 PORT=3000
 ```
 
-Démarrer:
+Start:
 
 ```bash
 npm start
 ```
 
-## À faire ensuite
+## Next steps
 
-1. Créer le compte Stripe.
-2. Récupérer la clé secrète de test.
-3. Configurer le webhook Stripe vers `/webhook`.
-4. Remplacer les textes légaux `À compléter`.
-5. Ajouter la vraie génération et protection du PDF.
+1. Create the Stripe account.
+2. Get the test secret key.
+3. Configure the Stripe webhook to `/webhook`.
+4. Replace the legal placeholder text.
+5. Add real PDF generation and download protection.
 
-## Déploiement Render
+## Render deployment
 
-1. Créer un compte sur Render.
-2. Connecter le dépôt GitHub du projet.
-3. Choisir **New > Web Service**.
+1. Create a Render account.
+2. Connect the project GitHub repository.
+3. Choose **New > Web Service**.
 4. Build command:
 
 ```bash
@@ -64,17 +64,17 @@ npm install
 npm start
 ```
 
-6. Ajouter les variables d'environnement:
+6. Add environment variables:
 
 ```bash
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
-APP_URL=https://votre-url-render.onrender.com
+APP_URL=https://your-render-url.onrender.com
 PORT=10000
 ```
 
-Quand votre domaine sera connecté au service, remplacer `APP_URL` par:
+When your domain is connected to the service, replace `APP_URL` with:
 
 ```bash
-APP_URL=https://votre-domaine.com
+APP_URL=https://your-domain.com
 ```

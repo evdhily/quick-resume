@@ -66,8 +66,8 @@ app.post("/create-checkout-session", async (request, response) => {
           price_data: {
             currency: "eur",
             product_data: {
-              name: "quick resume - Acces CV 24h",
-              description: "Téléchargement PDF du CV pendant 24h.",
+              name: "quick resume - 24h resume access",
+              description: "Resume PDF download access for 24h.",
             },
             unit_amount: 199,
           },
@@ -80,7 +80,7 @@ app.post("/create-checkout-session", async (request, response) => {
 
     response.json({ url: session.url });
   } catch (error) {
-    response.status(500).json({ error: "Impossible de creer la session Stripe." });
+    response.status(500).json({ error: "Unable to create the Stripe session." });
   }
 });
 
